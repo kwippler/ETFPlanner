@@ -1,3 +1,7 @@
+<!--
+  ETF-Vorsorgerechner - Ingenieursmäßige Projektion
+  Lizenz: MIT
+-->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -9,20 +13,21 @@
     <style>
         input[type=range] { @apply cursor-pointer; }
         .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .input-group-label { position: absolute; top: -1.25rem; left: 0; font-size: 0.5rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.025em; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans text-sm">
 
     <div class="max-w-6xl mx-auto space-y-8">
         
-        <!-- Kopfzeile -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-slate-800">ETF-Vorsorgerechner</h1>
+                <p class="text-slate-500 mt-1 uppercase text-xs font-semibold tracking-widest text-blue-600">Projektion & Sensitivitätsanalyse</p>
             </div>
             <div class="flex items-center gap-4 bg-white p-3 rounded-xl shadow-sm border">
                 <div class="text-right">
-                    <p class="text-xs text-slate-400 font-medium uppercase tracking-tight">Finanzierungsl&uuml;cke</p>
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-tight">Finanzierungslücke</p>
                     <p id="gap-display" class="text-xl font-bold"></p>
                 </div>
                 <div id="status-icon" class="p-2 rounded-full"></div>
@@ -31,11 +36,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Parameter-Sektion -->
             <section class="lg:col-span-1 space-y-6 bg-white p-6 rounded-2xl shadow-sm border">
                 <div class="flex items-center gap-2 mb-2 text-slate-700">
                     <i data-lucide="settings-2" class="text-blue-600 w-5 h-5"></i>
-                    <h2 class="text-lg font-bold">Parameter</h2>
+                    <h2 class="text-lg font-bold">Systemkonfiguration</h2>
                 </div>
 
                 <div class="space-y-4">
@@ -62,22 +66,22 @@
                             <input type="number" id="reduktionsAlter" oninput="calculate()" class="w-full p-2 border rounded-lg bg-slate-50 font-mono text-center border-orange-200 focus:ring-2 focus:ring-orange-400 outline-none">
                         </div>
                         <div>
-                            <span id="label-ende" class="text-[9px] text-slate-400 block mb-1 font-bold"></span>
+                            <span id="label-ende" class="text-[9px] text-slate-400 block mb-1 font-bold text-red-500"></span>
                             <div id="container-ende"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="space-y-4 pt-4 border-t">
+                <div class="space-y-4 pt-6 border-t">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-tighter">Finanzielle Basis</label>
                     <div class="flex gap-4 pt-4">
                         <div class="relative w-1/2">
-                            <span class="absolute -top-4 left-0 text-[8px] uppercase text-slate-400 font-bold">Startkapital</span>
+                            <span class="input-group-label">Startkapital</span>
                             <div class="absolute left-2 top-2.5 text-slate-400"><i data-lucide="euro" class="w-3.5 h-3.5"></i></div>
                             <input type="number" id="startKapital" oninput="calculate()" class="w-full pl-7 p-2 border rounded-lg bg-slate-50 font-mono focus:ring-2 focus:ring-blue-400 outline-none">
                         </div>
                         <div class="relative w-1/2">
-                            <span class="absolute -top-4 left-0 text-[8px] uppercase text-slate-400 font-bold">Sparrate</span>
+                            <span class="input-group-label">Sparrate</span>
                             <div class="absolute left-2 top-2.5 text-slate-400"><i data-lucide="euro" class="w-3.5 h-3.5"></i></div>
                             <input type="number" id="sparrate" oninput="calculate()" class="w-full pl-7 p-2 border rounded-lg bg-slate-50 font-mono focus:ring-2 focus:ring-blue-400 outline-none">
                         </div>
@@ -90,25 +94,28 @@
                         <input type="range" id="range-ziel" min="500" max="10000" step="100" oninput="updateRange('ziel', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-blue-600">
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span>Renditeerwartung</span><span id="val-rendite"></span></div>
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span class="text-orange-600">Restbedarf ab Reduktion</span><span id="val-reduktion" class="text-orange-600"></span></div>
+                        <input type="range" id="range-reduktion" min="50" max="100" step="5" oninput="updateRange('reduktion', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-orange-600">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span>Marktrendite p.a.</span><span id="val-rendite"></span></div>
                         <input type="range" id="range-rendite" min="1" max="12" step="0.5" oninput="updateRange('rendite', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-blue-600">
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span class="text-emerald-600">Dynamik</span><span id="val-dynamik" class="text-emerald-600"></span></div>
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span class="text-emerald-600">Sparraten-Dynamik</span><span id="val-dynamik" class="text-emerald-600"></span></div>
                         <input type="range" id="range-dynamik" min="0" max="10" step="0.5" oninput="updateRange('dynamik', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-emerald-600">
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span class="text-orange-600">Inflation</span><span id="val-inflation"></span></div>
+                        <div class="flex justify-between text-[10px] uppercase font-bold mb-1"><span class="text-orange-600">Inflationsrate ø</span><span id="val-inflation"></span></div>
                         <input type="range" id="range-inflation" min="0" max="6" step="0.1" oninput="updateRange('inflation', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none accent-orange-600">
                     </div>
                 </div>
             </section>
 
-            <!-- Resultat-Sektion -->
             <section class="lg:col-span-2 space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-blue-600">Erwartetes Kapital</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-blue-600">Erwartetes Endkapital</p>
                         <h3 id="res-vermoegen" class="text-2xl font-bold mt-2 text-slate-800"></h3>
                     </div>
                     <div id="card-soll" class="bg-white p-5 rounded-2xl shadow-sm border border-l-4">
@@ -120,29 +127,28 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-emerald-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
                         <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-4 text-emerald-300 uppercase font-bold text-[10px] tracking-widest"><i data-lucide="target" class="w-4 h-4"></i> Ziel-Sparrate</div>
+                            <div class="flex items-center gap-2 mb-4 text-emerald-300 uppercase font-bold text-[10px] tracking-widest"><i data-lucide="target" class="w-4 h-4"></i> Zielwert-Sparrate</div>
                             <p id="res-erforderliche-rate" class="text-3xl font-bold"></p>
-                            <p class="text-[10px] mt-2 text-emerald-200/70 leading-tight">Ben&ouml;tigte Initialrate bei gew&auml;hlter Dynamik.</p>
+                            <p class="text-[10px] mt-2 text-emerald-200/70 leading-tight">Benötigte Initialrate zur Deckung des Bedarfs.</p>
                         </div>
                         <i data-lucide="zap" class="absolute -right-4 -bottom-4 opacity-10 w-24 h-24"></i>
                     </div>
 
                     <div class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
                         <div class="relative z-10">
-                            <div class="flex items-center gap-2 mb-4 text-indigo-300 uppercase font-bold text-[10px] tracking-widest"><i data-lucide="trending-up" class="w-4 h-4"></i> Ziel-Rendite</div>
+                            <div class="flex items-center gap-2 mb-4 text-indigo-300 uppercase font-bold text-[10px] tracking-widest"><i data-lucide="trending-up" class="w-4 h-4"></i> Zielwert-Rendite</div>
                             <p id="res-erforderliche-rendite" class="text-3xl font-bold"></p>
-                            <p class="text-[10px] mt-2 text-indigo-200/70 leading-tight">Ben&ouml;tigte Rendite bei aktuellem Sparplan.</p>
+                            <p class="text-[10px] mt-2 text-indigo-200/70 leading-tight">Notwendige Marktrendite bei aktuellem Sparplan.</p>
                         </div>
                         <i data-lucide="bar-chart-3" class="absolute -right-4 -bottom-4 opacity-10 w-24 h-24"></i>
                     </div>
                 </div>
 
-                <!-- Wärmekarte -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-2 text-slate-700">
                             <i data-lucide="arrow-right-left" class="text-blue-500 w-5 h-5"></i>
-                            <h2 class="text-lg font-bold tracking-tight">Sensitivit&auml;tsanalyse: Inflation &amp; Zeit</h2>
+                            <h2 class="text-lg font-bold tracking-tight">Wärmekarte: Inflation & Zeitspanne</h2>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -152,7 +158,7 @@
                         </table>
                     </div>
                     <p class="mt-4 text-[10px] text-slate-400 leading-tight">
-                        Obere Zahl: <strong>Nominaler Monatsbedarf</strong> (absolute Inflation). Untere Zahl: Notwendiger <strong>Kapitalstock</strong> in Mio. &euro;
+                        Obere Zahl: <strong>Nominaler Monatsbedarf</strong> (Kaufkrafterhalt). Untere Zahl: Notwendiger <strong>Kapitalstock</strong> in Mio. €.
                     </p>
                 </div>
 
@@ -171,13 +177,11 @@
     </div>
 
     <script>
-        // Konstanten
         const STEUERSATZ = 0.26375;
         const TEILFREISTELLUNG = 0.30;
         const SPARERPAUSCHBETRAG = 1000;
         const EURO = "\u20AC";
 
-        // Zustand
         let state = {
             startAlter: 35,
             rentenAlter: 67,
@@ -194,7 +198,6 @@
             basiszins: 2.29
         };
 
-        // Initialisierung
         function init() {
             document.getElementById('startAlter').value = state.startAlter;
             document.getElementById('rentenAlter').value = state.rentenAlter;
@@ -202,6 +205,7 @@
             document.getElementById('startKapital').value = state.startKapital;
             document.getElementById('sparrate').value = state.sparrate;
             document.getElementById('range-ziel').value = state.zielEinkommen;
+            document.getElementById('range-reduktion').value = state.reduktionProzent;
             document.getElementById('range-rendite').value = state.renditepA;
             document.getElementById('range-dynamik').value = state.dynamik;
             document.getElementById('range-inflation').value = state.inflationsrate;
@@ -220,14 +224,12 @@
             if (val) {
                 btnVerzehr.className = "flex-1 py-2 rounded-md text-[11px] font-bold transition-all bg-white shadow-sm text-orange-600 border border-slate-100";
                 btnErhalt.className = "flex-1 py-2 rounded-md text-[11px] font-bold transition-all text-slate-500";
-                labelEnde.textContent = "Ende";
-                labelEnde.className = "text-[9px] text-red-500 block mb-1 font-bold";
-                containerEnde.innerHTML = `<input type="number" id="endAlter" value="${state.endAlter}" oninput="state.endAlter = Number(this.value); calculate();" class="w-full p-2 border rounded-lg bg-white font-mono text-center border-red-200 ring-1 ring-red-100 focus:ring-2 focus:ring-red-400 outline-none">`;
+                labelEnde.textContent = "Endalter";
+                containerEnde.innerHTML = `<input type="number" id="endAlter" value="${state.endAlter}" oninput="state.endAlter = (this.value === '' ? 0 : Number(this.value)); calculate();" class="w-full p-2 border rounded-lg bg-white font-mono text-center border-red-200 ring-1 ring-red-100 focus:ring-2 focus:ring-red-400 outline-none">`;
             } else {
                 btnErhalt.className = "flex-1 py-2 rounded-md text-[11px] font-bold transition-all bg-white shadow-sm text-blue-600 border border-slate-100";
                 btnVerzehr.className = "flex-1 py-2 rounded-md text-[11px] font-bold transition-all text-slate-500";
                 labelEnde.textContent = "\u221E";
-                labelEnde.className = "text-[9px] text-slate-400 block mb-1 font-bold text-red-500";
                 containerEnde.innerHTML = `<div class="w-full p-2 border rounded-lg bg-slate-200 text-slate-400 font-bold text-center">\u221E</div>`;
             }
             calculate();
@@ -235,6 +237,7 @@
 
         function updateRange(id, val) {
             if (id === 'ziel') state.zielEinkommen = Number(val);
+            if (id === 'reduktion') state.reduktionProzent = Number(val);
             if (id === 'rendite') state.renditepA = Number(val);
             if (id === 'dynamik') state.dynamik = Number(val);
             if (id === 'inflation') state.inflationsrate = Number(val);
@@ -296,13 +299,14 @@
         }
 
         function calculate() {
-            state.startAlter = Number(document.getElementById('startAlter').value);
-            state.rentenAlter = Number(document.getElementById('rentenAlter').value);
-            state.reduktionsAlter = Number(document.getElementById('reduktionsAlter').value);
-            state.startKapital = Number(document.getElementById('startKapital').value);
-            state.sparrate = Number(document.getElementById('sparrate').value);
+            state.startAlter = document.getElementById('startAlter').value === '' ? 0 : Number(document.getElementById('startAlter').value);
+            state.rentenAlter = document.getElementById('rentenAlter').value === '' ? 0 : Number(document.getElementById('rentenAlter').value);
+            state.reduktionsAlter = document.getElementById('reduktionsAlter').value === '' ? 0 : Number(document.getElementById('reduktionsAlter').value);
+            state.startKapital = document.getElementById('startKapital').value === '' ? 0 : Number(document.getElementById('startKapital').value);
+            state.sparrate = document.getElementById('sparrate').value === '' ? 0 : Number(document.getElementById('sparrate').value);
 
             document.getElementById('val-ziel').textContent = state.zielEinkommen + " " + EURO;
+            document.getElementById('val-reduktion').textContent = state.reduktionProzent + "%";
             document.getElementById('val-rendite').textContent = state.renditepA + "%";
             document.getElementById('val-dynamik').textContent = state.dynamik + "%";
             document.getElementById('val-inflation').textContent = state.inflationsrate + "%";
@@ -346,8 +350,8 @@
             document.getElementById('res-erforderliche-rate').textContent = Math.round(solRate).toLocaleString() + " " + EURO + " / Monat";
             document.getElementById('res-erforderliche-rendite').textContent = solRend > 0 ? solRend.toFixed(2) + " % p.a." : "N/A";
 
-            document.getElementById('methodik-text').innerHTML = `<strong>Methodik:</strong> Instation\u00E4re Projektion des Kapitalverlaufs. Die Bedarfsabminderung auf ${state.reduktionProzent}% ab Alter ${state.reduktionsAlter} reduziert den Soll-Kapitalstock signifikant.`;
-            document.getElementById('steuer-text').innerHTML = `<strong>Steuerrecht:</strong> Simulation inkl. Vorabpauschale (Basiszins: ${state.basiszins}%) und 30% Teilfreistellung gem\u00E4\u00DF InvStG 2018.`;
+            document.getElementById('methodik-text').innerHTML = `<strong>Methodik:</strong> Projektion des Kapitalverlaufs. Die Bedarfsabminderung auf ${state.reduktionProzent}% ab Alter ${state.reduktionsAlter} reduziert den Soll-Kapitalstock signifikant.`;
+            document.getElementById('steuer-text').innerHTML = `<strong>Steuerrecht:</strong> Simulation inkl. Vorabpauschale (Basiszins: ${state.basiszins}%) und 30% Teilfreistellung gemäß InvStG 2018.`;
 
             renderHeatmap(vermoegen);
             lucide.createIcons();
